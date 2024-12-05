@@ -1,0 +1,100 @@
+interrupt program_start
+
+    `[`
+        set_state(search_mul)
+    `q]s!` # fail subroutine, go back to looking for m
+
+    `0so` # setup output register
+
+end
+
+interrupt program_end
+
+    `lop` # lop
+    
+end
+
+
+state search_mul
+    
+    streq(0, "mul(")
+    `0=q` # if not mul( continue
+    `li3+dsi;Isn` # increment i past the string
+
+    set_state(search_first_num) # else get number
+
+end
+
+state search_first_num
+
+    read_number()
+    `ds1` # read and store the first number
+    `_1=!` # if it's not a real number go back
+    set_state(search_comma)
+
+end
+
+state search_comma
+
+    `ln44!=!` # if not a comma break
+    set_state(search_second_num)
+
+end
+
+state search_second_num
+    read_number()
+    `ds2` # read and store the second number
+    `_1=!` # if it' not a number go back
+    set_state(search_end_paren)
+end
+
+state search_end_paren
+    `ln41!=!` # if it's not a ")" this instruction sucks
+
+    debug(`[got one]n10an`)
+
+    `l1l2*` # calculate the multiply
+    `lo+so` # add it into output
+
+    set_state(search_mul)
+
+end
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+    `_1`
+    # ret _1 if not a digit
+    `ln48>q`
+    `ln57<q`
+    `s.`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    `li1+dsi;Isn`
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    `z1=q`
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `s.`
+    # decrement i so we reread the skipped char
+    `li1-dsi;Isn`
+
+end

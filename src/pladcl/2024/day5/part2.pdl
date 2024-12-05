@@ -1,0 +1,205 @@
+state rule_read_first
+    read_number()
+    `s1` # store this in 1
+    set_state(rule_read_second)
+end
+
+state rule_read_second
+    return_if(`ln` == 124)
+    read_number()
+
+    # calculate list size
+    `l1;$`
+    
+    # calculate list offset
+    `l1`
+    `100*+` # num * 100 + size
+
+    `:%` # store the num on the array
+
+    `l1;$1+` # inc size
+    `l1:$`   # and store
+
+end
+
+state manual_read
+
+    return_if(`ln` == 44)
+    read_number()
+    `lc:3` # store it in an array at C
+    `lc1+sc`
+
+end
+
+interrupt newline
+
+    if `l=` == 2 then
+                
+        if verify_manual() == 0 then
+            debug(`[wowie]n10an`)
+            fix_manual()
+            get_middle()
+            `lo+so`
+        end
+
+        adjust_index(1)
+
+        `0sc`
+    end
+
+
+    # rule reading
+    if `l=` == 1 then
+
+        adjust_index(1)  # increment to next
+        set_state(rule_read_first)
+
+        # if still newline
+        if `ln` == 10 then
+            set_state(manual_read)
+            `0sc`
+            `2s=`
+            adjust_index(1)
+        end
+    end
+end
+
+
+function fix_manual
+
+    # from 0 to c
+    `0s!`
+    while `l!` < `lc` do
+    
+        # load list offset
+        `l!;3`
+        `100*s1`
+
+        # from 0 to c
+        `0s?`
+        `0` # start sum
+        while `l?` < `lc` do
+            if `l?` != `l!` then
+                # load value
+                `l?;3s2`
+                list_lookup()
+                `+` # add lookup into sum
+
+            end
+            `l?1+s?`
+        end
+
+        `lcr-1-` # reverse index
+        `l!;3` # load number
+        `r:4` # store into 4
+        `l!1+s!`
+    end
+end
+
+function get_middle
+    
+    `lc2/` # get middle
+    `;4` # and index
+
+end
+
+# ok.
+function verify_manual
+    
+    # from 0 to c - 1
+    `0s!`
+    while `l!` < `lc1-` do
+
+        # load list offset
+        `l!;3`
+        `100*s1`
+
+        # from ! + 1 to c
+        `l!1+s?`
+        while `l?` < `lc` do
+            `l?;3`
+            `s2` # load value
+            
+            # return 0 if not found
+            if list_lookup() == 0 then
+                return 0
+            end
+            `l?1+s?`
+        end
+        `l!1+s!`
+    end
+
+    1
+
+end
+
+
+# takes offset in 1, value in 2
+function list_lookup
+
+    # so we don't clobber 1
+    `l1s.`
+    
+    while `l.;%` != 0 do
+        if `l.;%` == `l2` then
+            return 1
+        end
+        `l.1+s.`
+    end
+    
+    0
+end
+
+
+
+interrupt program_start
+    `1s=`
+end
+
+interrupt program_end
+    `lop`
+end
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+
+    -1
+    # ret _1 if not a digit
+    return_if(`ln` < 48)
+    return_if(`ln` > 57)
+    `st`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    adjust_index(1)
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    return_if(1 == `z`)
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `st`
+    # decrement i so we reread the skipped char
+    adjust_index(-1)
+
+end
+
+function abs
+    `d0<q0r-`
+end

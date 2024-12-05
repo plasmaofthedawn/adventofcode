@@ -1,0 +1,342 @@
+.org 0x0000
+
+    LD HL, FILE;
+
+main_loop:
+
+    CALL LOAD_MAP
+    PUSH HL
+    CALL CHECK_MAP
+    POP HL
+    JR C, vert
+
+    ;; ld a into bc
+    LD B, 0;
+    LD C, A;
+
+    ;; add it into IX
+    ADD IX, BC
+
+    JR vh_end
+
+vert
+
+    ;; ld a into bc
+    LD B, 0;
+    LD C, A;
+
+    ;; add it into IY
+    ADD IY, BC
+
+vh_end
+
+    ;; test if (HL) is 0
+    XOR A
+    CP (HL)
+
+    JR NZ, main_loop
+
+
+    ;; mult IY by 100 into hl
+    PUSH IY
+    POP HL
+    
+    ADD HL, HL
+    ADD HL, HL
+    PUSH HL    ; 4
+    ADD HL, HL
+    ADD HL, HL
+    ADD HL, HL
+    PUSH HL    ; 32
+    ADD HL, HL ; 64
+    POP BC
+    ADD HL, BC ; 64 + 32
+    POP BC
+    ADD HL, BC ; 64 + 32 + 4
+
+    ;; add in IX
+    PUSH IX
+    POP BC
+    ADD HL, BC
+
+    HALT
+
+    ; cool funny function stuff
+
+.org 0x1000
+
+start
+    defb 00h
+end
+    defb 00h
+count
+    defb 00h
+
+CHECK_V_MIRROR:
+    ; map in (HL)
+    ; col in A
+    ; width in B
+    ; height in C
+
+    LD HL, map
+    LD DE, map
+
+    ; A = 2 * col - map.width
+    SLA A       ; A = 2 * col
+    PUSH AF     ; save 2 * col
+    SUB B       ; A = 2 * col - map.width
+    
+    ADD A, 2    ; for off by 1 errors or some shit idfk
+
+    ; clip it to be 0
+    JP P, v_pos
+    LD A, 0
+v_pos
+
+    LD HL, map
+
+    LD (start), A    ; move 2 * col - map width (start check) into start
+    LD L, A        ; and to L for safekeeping
+
+    POP AF      ; restore A to 2 * col;
+    SUB L       ; A = 2 * col - start 
+    INC A       ; A = 2 * col - start + 1
+
+    LD (end), A ; store that in end
+
+    SUB L       ; A is the difference
+    SRL A       ; divide by 2
+    INC A       ; + 1
+
+    LD (count), A ; you got the counter for the inner loop
+v_loop_out
+
+    ; move col into B for the counter
+    LD A, (count)
+    LD B, A
+
+    ; mov start and end into the registers
+    LD A, (start)
+    LD L, A
+    LD A, (end)
+    LD E, A
+v_loop_in
+
+    ; compare the two characters
+    LD A, (DE)
+    CP A, (HL)
+
+    ; return NZ if they're not equal
+    RET NZ
+
+    ; next character
+    DEC E
+    INC L
+
+    ; :clap: :clap: next meme
+    DEC B
+    JR NZ, v_loop_in
+vq
+
+    ;; go to next line
+    INC H
+    INC D
+
+    DEC C ; dec the loop counter and loop if negative
+    JP NZ, v_loop_out
+vq2
+
+    XOR A ; set zero flag and return 
+    RET
+
+CHECK_H_MIRROR:
+    ; map in (HL)
+    ; col in A
+    ; width in B
+    ; height in C
+
+    LD HL, map
+    LD DE, map
+
+    ; A = 2 * col - map.height
+    SLA A       ; A = 2 * col
+    PUSH AF     ; save 2 * col
+    SUB C       ; A = 2 * col - map.height
+    
+    ADD A, 2    ; for off by 1 errors or some shit idfk
+
+    ; clip it to be 0
+    JP P, h_pos
+    LD A, 0
+h_pos
+
+    LD (start), A    ; move 2 * col - map width (start check) into start
+    LD D, A        ; and to L for safekeeping
+
+    POP AF      ; restore A to 2 * col;
+    SUB D       ; A = 2 * col - start 
+    INC A       ; A = 2 * col - start + 1
+
+    LD (end), A ; store that in end
+
+    SUB D       ; A is the difference
+    SRL A       ; divide by 2
+    INC A       ; + 1
+
+    LD (count), A ; you got the counter for the inner loop
+h_loop_out
+
+    ; move col into C for the counter
+    LD A, (count)
+    LD C, A
+
+    ; mov start and end into the registers
+    LD A, (start)
+    ADD A, 60h
+    LD H, A
+    LD A, (end)
+    ADD A, 60h
+    LD D, A
+h_loop_in
+
+    ; compare the two characters
+    LD A, (DE)
+    CP A, (HL)
+
+    ; return NZ if they're not equal
+    RET NZ
+
+    ; next character
+    DEC D
+    INC H
+
+    ; :clap: :clap: next meme
+    DEC C
+    JR NZ, h_loop_in
+hq
+
+    ; HALT
+
+    ;; go to next line
+    INC E
+    INC L
+
+    DEC B ; dec the loop counter and loop if negative
+    JP NZ, h_loop_out
+hq2
+
+    XOR A ; set zero flag and return 
+    RET
+
+CHECK_MAP:
+    ; B is width, C is height
+
+    LD A, B
+    DEC A
+v_detect_loop
+
+    PUSH AF ; save loop count
+    PUSH BC ; save width + height
+    LD HL, map ; map as input
+
+    CALL CHECK_V_MIRROR;
+
+    JR NZ, v_not_it
+
+    POP BC
+    POP AF  ; fix the stack
+    INC A   ; for off by one errors
+    OR A    ; clear carry, cause it is a vert mirror
+    RET
+v_not_it:
+
+    POP BC
+    POP AF ; get values back
+
+    DEC A
+    JP P, v_detect_loop
+    
+vcq
+
+    ;; load height-1 into A 
+    LD A, C 
+    DEC A
+h_detect_loop
+
+    PUSH AF ; save loop count
+    PUSH BC ; save width + height
+    LD HL, map ; map as input
+
+    CALL CHECK_H_MIRROR;
+
+    JR NZ, h_not_it
+
+    POP BC
+    POP AF  ; fix the stack
+
+    INC A   ; for off by one errors
+    SCF     ; carry, cause it is a horiz mirror
+    RET
+
+h_not_it:
+
+    POP BC
+    POP AF  ; fix the stack
+
+    DEC A
+    JP P, h_detect_loop
+hcq
+
+    LD A, 0xFF;
+    RET
+
+LOAD_MAP:
+    ; hl: address to start of map
+    ; out : bc, width; height
+
+    LD BC, 0;
+    LD DE, map ; start of map
+l_loop:
+    ; HALT
+    
+    LD A, (hl) ; get character
+
+    ;; go to next thing
+    INC HL
+
+    CP A, 0x0A ; check if newline
+    JR NZ, l_not_newline
+
+    ;; check E is 0, break if so
+    LD A, E
+    OR A
+    RET Z
+
+    ;; set width to this width, increment C
+    LD B, E
+
+    INC C
+
+    ;; mov to beginning of next line
+    LD E, 0
+    INC D
+
+    JP l_loop;
+l_not_newline
+
+    LD (DE), A ; copy character
+
+    ; go to next address
+    INC E 
+
+    ; loop
+    JP l_loop;
+
+.org 0x6000
+map
+    DEFM 'fukfukfukfukfukfukfukfukfukfuk'
+
+.org 0x8000
+FILE
+    INCBIN "input.txt"
+    DEFB 0

@@ -1,0 +1,15 @@
+LR
+
+mmA = (mmb, xxx)
+mmb = (xxx, mmZ)
+mmZ = (mmb, xxx)
+nnA = (nnb, xxx)
+nnb = (nnc, nnc)
+nnc = (nnZ, nnZ)
+nnZ = (nnb, nnb)
+ooA = (ooZ, oob)
+oob = (ood, ooc)
+ooc = (ooA, oox)
+ood = (ooZ, ood)
+ooZ = (oob, ooZ)
+xxx = (xxx, xxx)

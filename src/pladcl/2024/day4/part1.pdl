@@ -1,0 +1,128 @@
+state seek_newline
+   
+    # if not newline quit
+    `ln10!=q`
+
+    # get the width (plus1 cause newline)
+    `li1+sw`
+    
+    # go back to start
+    set_state(findxmas)
+    rewind()
+
+end
+
+state findxmas
+
+    `[lo1+so]s.` # increment 
+
+    streq(0, "XMAS")
+    `1=.` # inc if equal
+
+    streq(1, "SAMX")
+    `1=.` # inc if equal
+
+    # verts
+    search_down_xmas()
+    search_down_samx()
+
+    search_dr_xmas()
+    search_dr_samx()
+
+    search_dl_xmas()
+    search_dl_samx()
+
+    debug(`lon10an`)
+
+end
+
+function search_down_xmas
+
+    #debug_print("hello")
+    #debug(`li;In10an`)
+    
+    `li;I88!=q` # if index is not X quit
+
+    #debug_print("1")
+    #debug(`lilw+;In10an`)
+
+    `lilw+;I77!=q` # if index + width is not M quit
+
+    #debug_print("2")
+    #debug(`lilw2*+;In10an`)
+
+    `lilw2*+;I65!=q` # if index + 2* width iw not A quit
+
+    #debug_print("3")
+
+    `lilw3*+;I83!=q` # if index + 3* width is not A quit
+
+    #debug_print("4")
+
+    `lo1+so` # increment
+
+end
+
+function search_down_samx
+
+    #debug_print("hello")
+    #debug(`li;In10an`)
+    
+    `li;I83!=q` 
+    `lilw+;I65!=q` 
+    `lilw2*+;I77!=q` 
+    `lilw3*+;I88!=q` 
+    `lo1+so` # increment
+
+end
+
+function search_dr_xmas
+
+    `li;I88!=q` 
+    `lilw1++;I77!=q` 
+    `lilw1+2*+;I65!=q` 
+    `lilw1+3*+;I83!=q` 
+    `lo1+so` # increment
+
+end
+
+
+function search_dr_samx
+
+    `li;I83!=q` 
+    `lilw1++;I65!=q` 
+    `lilw1+2*+;I77!=q` 
+    `lilw1+3*+;I88!=q` 
+    `lo1+so` # increment
+
+end
+
+function search_dl_xmas
+
+    `li;I88!=q` 
+    `lilw1-+;I77!=q` 
+    `lilw1-2*+;I65!=q` 
+    `lilw1-3*+;I83!=q` 
+    `lo1+so` # increment
+
+end
+
+
+function search_dl_samx
+
+    `li;I83!=q` 
+    `lilw1-+;I65!=q` 
+    `lilw1-2*+;I77!=q` 
+    `lilw1-3*+;I88!=q` 
+    `lo1+so` # increment
+
+end
+
+interrupt program_start
+    `0so` # start output as 0
+end
+
+interrupt program_end
+    debug(`lwn10an`)
+    `lon`
+end

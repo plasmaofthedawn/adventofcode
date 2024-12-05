@@ -1,0 +1,144 @@
+state read_first
+    read_number()
+    `S1`
+    set_state(read_second)
+end
+
+state read_second
+    return_if(`ln` == 32)
+    read_number()
+    `S2`
+end
+
+interrupt newline
+    adjust_index(1)
+    set_state(read_first)
+end
+
+interrupt program_start
+    `_1S1`
+    `_1S2`
+end
+
+interrupt program_end
+    `L1st` # remove the extra -1
+
+    `_1S3`
+    `_1S4`
+
+    # until we drain 1
+    while `L1ds!` != -1 do
+
+        #`[1)]nf`
+        
+        # until we drain 3
+        while `L3ds#` != -1 do
+           # if top of stack is greater than !
+           if `l#` >= `l!` then
+                `l#S3` # push # back onto 3
+                #`[2)]nf`
+                break
+            end
+
+            `l#S1` # push # onto 1
+            #`[3)]nf`        
+    
+
+        end
+
+        #`[4)]nf`
+
+        # if we popped the end of array off then put it back on 
+        if `l#` == -1 then
+            `_1S3`
+        end
+
+
+        `l!S3` # push ! into temp stack
+
+    end
+
+    debug_print("sorted 1")
+
+    # until we drain 2
+    while `L2ds@` != -1 do
+        
+        # until we drain 4
+        while `L4ds$` != -1 do
+           # if top of stack is greater than @
+           if `l$` >= `l@` then
+                `l$S4` # push $ back onto 4
+                break
+            end
+
+            `l$S2` # push $ onto 2
+            
+        end
+
+        # if we popped the end of array off then put it back on 
+        if `l$` == -1 then
+            `_1S4`
+        end
+
+
+        `l@S4` # push @ into temp stack
+
+    end
+
+    `0so`
+
+    debug_print("sorted")
+
+    while `L4s2L3ds1` != -1 do
+        `l1l2-`
+        abs()
+        `lo+so`
+    end
+
+    `lop`
+
+end
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+
+    -1
+    # ret _1 if not a digit
+    return_if(`ln` < 48)
+    return_if(`ln` > 57)
+    `st`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    adjust_index(1)
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    return_if(1 == `z`)
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `st`
+    # decrement i so we reread the skipped char
+    adjust_index(-1)
+
+end
+
+function abs
+    `d0<q0r-`
+end

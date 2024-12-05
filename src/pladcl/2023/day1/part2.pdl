@@ -1,0 +1,52 @@
+state search_first
+    parse_int()
+    `z0=q`
+    `ds1s2`
+    set_state(search_second)
+end
+
+state search_second
+    parse_int()
+    `z0=q`
+    `s2`
+end
+
+interrupt newline
+    `l2l110*+`
+    `lo+so`
+    set_state(search_first)
+end
+
+interrupt program_end
+    `lop`
+end
+
+function parse_int
+
+    `[`
+      `ln48>qln57<q`
+      `ln48-q`
+    `]x`
+
+    `1`
+    streq(0, "one")
+    `1=q1+`
+    streq(0, "two")
+    `1=q1+`
+    streq(0, "three")
+    `1=q1+`
+    streq(0, "four")
+    `1=q1+`
+    streq(0, "five")
+    `1=q1+`
+    streq(0, "six")
+    `1=q1+`
+    streq(0, "seven")
+    `1=q1+`
+    streq(0, "eight")
+    `1=q1+`
+    streq(0, "nine")
+    `1=q`
+    `s.`
+
+end

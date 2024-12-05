@@ -1,0 +1,153 @@
+state start
+    # read a number and put it into the report stack
+    read_number()
+    `[d_1!=qs.q]x`
+    `SR`
+end
+
+# prime the report stack with an end token
+interrupt program_start
+    `_1SR`
+end
+
+interrupt newline
+
+    
+    # check sequence and add it into output
+    check_sequence()
+    `lo+so`
+
+    # increment past newline
+    `li1+dsi;Isn`
+    # clear report
+    `_1SR`
+
+end
+
+interrupt program_end
+    `lop`
+end
+
+function check_sequence
+
+    `[chk]n10an`
+
+    `[s.q]s?`
+    
+    # return value
+    `0`
+
+    # start checking the first two values (+1)
+    `LRLRdSR-`
+    
+    # return if 0  (0)
+    `d0=?`
+
+    # calc abs, return if > 3 (0)
+    `d`
+    abs()
+    `3<?`
+
+    # if desc
+    `[d0<qs.`
+        check_descending_sequence()
+    `+q]x` # add it's return value to 0
+
+    `[0>q`
+        check_ascending_sequence()
+    `+q]x`
+
+end
+
+function check_descending_sequence
+
+    `[dsc]n10an`
+    
+    `[s.s.1+q]s!` # success macro
+    `[s.q]s?`  # cleanup fail macro 
+
+    # ret value
+
+    `0`
+
+    # start with smth
+    `LR`
+    `[`
+        `LRdSR` # grab (and replace the next character)
+        `d_1=!`  # if we're done then break out of here as a success
+        `-`     # get difference
+        `d_1<?` # if > -1 fail
+        `_3>q`  # if < -3 fail
+        `LR`    # grab the next
+        `l.x`   # and loop
+    `]ds.x`
+end
+
+function check_ascending_sequence
+
+
+    `[asc]n10an`
+
+    `[s.s.1+q]s!` # success macro
+    `[s.q]s?`  # cleanup fail macro 
+
+    # ret value
+
+    `0`
+
+    # start with smth
+    `LR`
+    `[`
+        `LRdSR` # grab (and replace the next character)
+        `d_1=!`  # if we're done then break out of here as a success
+        `-`     # get difference
+        `d1>?`  # if < 1 fail
+        `3<q`   # if > 3 fail
+        `LR`    # grab the next
+        `l.x`   # and loop
+    `]ds.x`
+
+end
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+    `_1`
+    # ret _1 if not a digit
+    `ln48>q`
+    `ln57<q`
+    `s.`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    `li1+dsi;Isn`
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    `z1=q`
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `s.`
+    # decrement i so we reread the skipped char
+    `li1-dsi;Isn`
+
+end
+
+function abs
+    `d0<q0r-`
+end

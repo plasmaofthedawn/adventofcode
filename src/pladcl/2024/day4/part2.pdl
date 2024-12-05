@@ -1,0 +1,85 @@
+state seek_newline
+   
+    # if not newline quit
+    `ln10!=q`
+
+    # get the width (plus1 cause newline)
+    `li1+sw`
+    
+    # go back to start
+    set_state(findxmas)
+    rewind()
+
+end
+
+state findxmas
+
+    search_mm()
+    search_sm()
+    search_ms()
+    search_ss()
+
+    debug(`lon10an`)
+
+end
+
+function search_mm
+
+                        #  x  y
+    `li;I77!=q`         # [0][0] = m
+    `li2+;I77!=q`       # [0][2] = m
+    `lilw1++;I65!=q`    # [1][1] = a
+    `lilw2*+;I83!=q`    # [2][0] = s
+    `lilw1+2*+;I83!=q`  # [2][2] = s
+
+    `lo1+so` # increment
+
+end
+
+function search_sm
+
+                        #  x  y
+    `li;I83!=q`         # [0][0] = s
+    `li2+;I77!=q`       # [0][2] = m
+    `lilw1++;I65!=q`    # [1][1] = a
+    `lilw2*+;I83!=q`    # [2][0] = s
+    `lilw1+2*+;I77!=q`  # [2][2] = m
+
+    `lo1+so` # increment
+
+end
+
+function search_ms
+
+    #  x  y
+    `li;I77!=q`         # [0][0] = m
+    `li2+;I83!=q`       # [0][2] = s
+    `lilw1++;I65!=q`    # [1][1] = a
+    `lilw2*+;I77!=q`    # [2][0] = m
+    `lilw1+2*+;I83!=q`  # [2][2] = s
+
+    `lo1+so` # increment
+
+end
+
+function search_ss
+
+    #  x  y
+    `li;I83!=q`         # [0][0] = m
+    `li2+;I83!=q`       # [0][2] = m
+    `lilw1++;I65!=q`    # [1][1] = a
+    `lilw2*+;I77!=q`    # [2][0] = s
+    `lilw1+2*+;I77!=q`  # [2][2] = s
+
+    `lo1+so` # increment
+
+end
+
+interrupt program_start
+    `0so` # start output as 0
+end
+
+interrupt program_end
+    debug(`lwn10an`)
+    `lon`
+end
