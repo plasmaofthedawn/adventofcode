@@ -1,0 +1,206 @@
+state start
+    if streq(0, "^") == 1 then
+        `lisp`
+    end
+end
+
+interrupt program_start
+    `0sw`
+    `0sh`
+end
+
+interrupt newline
+    # if the width hasn't been recorded yet
+    if `lw` == 0 then
+        # width is here
+        `li1+sw`
+    end
+
+    # inc height
+    `lh1+sh`
+end
+
+interrupt program_end
+    # print board size
+    `[board is ]nlwn[ x ]nlhn10an`
+
+    `11sd` # current direction 
+    # 2 is up, 3 is right, 5 is down, 7 is left
+
+    `lplw~sxsy`
+    `lxs1lys2`
+    while 0 == 0 do
+        if out_of_bounds() == 1 then
+            break
+        end
+
+        mark_visited()
+        do_movement()
+        value_at_cursor()
+        `sv`
+        if `lv` != '#' then
+            `l1sxl2sy`
+        end
+        if `lv` == '#' then
+            next_dir()
+        end
+    end
+
+    `[initial movement check done]n10an`
+
+    `0so`
+    `0s)`
+
+    for '-' in 0 to `lwlh1-*` do
+        #`6 lw * 3 + s-`
+        if `l-;X` == 1 then
+            if `l-;I` == '.' then 
+
+                `l)p1+s)`
+
+                #`l-lw~sxsy`
+                #`[(]nlxn[, ]nlyn[)]n10an`
+
+                `l-;Isi` # load the replacement value of I for safekeeping
+
+                '#'
+                `l-:I` # replce it with '#'
+
+                # check
+                clear_visited()
+
+                if test_escape() == 0 then
+                    `lo1+so`
+                end
+            
+                '.'
+                `l-:I` # replace the value back to what it was
+            end
+        end
+        #break
+    end
+
+    `[done]p`
+    `lop`
+
+end
+
+function test_escape
+        # calculate x and y dir from found position of ^
+    `lplw~sxsy`
+    `11sd`
+
+    while 0 == 0 do 
+        #`[a]nf`
+
+        #`[current pos is (]nlxn[, ]nlyn[) dir is ]nldn10an`
+
+        #`[b]nf`
+
+        if check_and_mark_visited() == 1 then
+            return 0
+        end
+
+        #`[c]nf`
+        
+        do_movement()
+
+        if out_of_bounds() == 1 then
+            return 1
+        end
+
+        value_at_cursor()
+
+        `sv`
+        if `lv` != '#' then
+            `l1sxl2sy`
+        end
+        if `lv` == '#' then
+            next_dir()
+        end
+
+    end
+end
+
+function clear_visited
+    for '?' in 0 to `lwlh1-*` do 
+        `1l?:V`
+    end
+end
+
+# takes x, y, d and puts it into 1, 2
+function do_movement
+    if `ld` == 11 then
+        `lxs1`
+        `ly1-s2`
+    end
+    if `ld` == 17 then
+        `lx1+s1`
+        `lys2`
+    end
+    if `ld` == 23 then
+        `lxs1`
+        `ly1+s2`
+    end
+    if `ld` == 29 then
+        `lx1-s1`
+        `lys2`
+    end
+end
+
+# finds the char at (1, 2)
+function value_at_cursor
+    `l2lw*l1+;I`
+end
+
+# return 1 if already visited in this dir, return 0 and else mark (x, y) as visited
+function check_and_mark_visited
+    # index
+    `lylw*lx+s.`
+    # get value of 
+    `l.;Vsv`
+
+    if `lvld%` == 0 then
+        #`[wow]n`
+        return 1
+    end
+    
+    # multiply in d
+    `lvld*`
+    # store in array
+    `l.:V`
+
+    0
+end
+
+function mark_visited
+    # index
+    `1lylw*lx+:X`
+end
+
+
+function next_dir
+    if `ld` == 29 then
+        `11sd`
+        return
+    end
+    `ld6+sd`
+end
+
+        
+# if (x, y) is out of bounds
+function out_of_bounds
+    if `l1` < 0 then
+        return 1
+    end
+    if `l2` < 0 then
+        return 1
+    end
+    if `l1` >= `lw1-` then
+        return 1
+    end
+    if `l2` >= `lh1-` then
+        return 1
+    end
+    0
+end

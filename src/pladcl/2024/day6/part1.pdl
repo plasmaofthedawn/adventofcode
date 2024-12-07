@@ -1,0 +1,131 @@
+state start
+    if streq(0, "^") == 1 then
+        `lisp`
+    end
+end
+
+interrupt program_start
+    `0sw`
+    `0sh`
+end
+
+interrupt newline
+    # if the width hasn't been recorded yet
+    if `lw` == 0 then
+        # width is here
+        `li1+sw`
+    end
+
+    # inc height
+    `lh1+sh`
+end
+
+interrupt program_end
+    # print board size
+    `[board is ]nlwn[ x ]nlhn10an`
+
+    `0sd` # current direction 
+    # 0 is up, 1 is right, 2 is down, 3 is left
+
+    # calculate x and y dir from found position of ^
+    `lplw~sxsy`
+
+    while 0 == 0 do 
+        
+        #`[current pos is (]nlxn[, ]nlyn[) dir is ]nldn10an`
+       
+        if out_of_bounds() == 1 then
+            break
+        end
+
+        # mark us as here
+        mark_visited()
+
+        do_movement()
+
+        #`[value at next_pos is ]n`
+        #value_at_cursor()
+        #`an10an`
+
+        value_at_cursor()
+        `sv`
+
+        if `lv` != '#' then
+            # move there
+            `l1sx`
+            `l2sy`
+        end
+
+        # else turn
+        if `lv` == '#' then 
+            # d = (d + 1) % 4
+            `ld1+4%sd`
+        end
+    end
+
+
+    # sum all visited
+    0
+    for '!' in 0 to `lwlh1-*` do 
+        `l!;Vsv`
+
+        if `lv` == 0 then
+            `l!;Ian`
+        end
+        if `lv` != 0 then
+            `[X]n`
+        end
+
+        `lv+`
+
+    end
+    `[visited: ]np`
+
+end
+
+# takes x, y, d and puts it into 1, 2
+function do_movement
+    if `ld` == 0 then
+        `lxs1`
+        `ly1-s2`
+    end
+    if `ld` == 1 then
+        `lx1+s1`
+        `lys2`
+    end
+    if `ld` == 2 then
+        `lxs1`
+        `ly1+s2`
+    end
+    if `ld` == 3 then
+        `lx1-s1`
+        `lys2`
+    end
+end
+
+# finds the char at (1, 2)
+function value_at_cursor
+    `l2lw*l1+;I`
+end
+
+# mark (x, y) as visited
+function mark_visited
+    `1lylw*lx+:V`
+end
+
+# if (x, y) is out of bounds
+function out_of_bounds
+    if `lx` < 0 then
+        return 1
+    end
+    if `ly` < 0 then
+        return 1
+    end
+    if `lx` >= `lw1-` then
+        return 1
+    end
+    if `ly` >= `lh1-` then
+        return 1
+    end
+    0
+end
