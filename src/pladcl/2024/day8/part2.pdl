@@ -1,0 +1,180 @@
+# X: locations array
+# Y: locations list count
+# Z: antinodes
+
+state start
+
+    letter_to_ind()
+    `s.`
+
+    if `l.` != -1 then
+
+        `li` # store current position
+
+        `l.100*` # get offset into list
+        `l.;Y` # read current list size
+        `+`    # get total offset
+
+        `:X`  # store position into array
+
+        `l.;Y1+`
+        `l.:Y` # increment list size
+
+    end
+end
+
+interrupt newline
+
+    # calc program width + height
+
+    if `lw` == 0 then
+        `li1+sw`
+    end
+    `lh1+sh`
+end
+
+interrupt program_end
+
+    `3600sc` # counter
+
+    `[starting]pst`
+
+    for '!' in 0 to 6200 step 100 do
+        #`l!n10an`
+        `l!s1`
+        while `l1;X` != 0 do 
+            `l11+s2`
+            while `l2;X` != 0 do 
+                `l1;X`
+                `lw~`
+                print_point()
+
+                `l1;Xlw~s<s>`
+
+                `l2;X`
+                `lw~`
+                print_point()
+
+                `l2;Xlw~s{s}`
+
+                `[: ]n`
+
+                add_antinodes()
+
+                `10an`
+                `l21+s2`
+            end
+            # increment
+            `l11+s1`
+        end
+    end
+
+    `0so`
+    for '!' in 0 to `lwlh*` do 
+        if `l!;Z` == 1 then
+            `lo1+so`
+            `[#]n`
+        end
+        if `l!;Z` == 0 then
+            `l!;Ian`
+        end
+    end
+
+    `lop`
+
+end
+
+# takes p1 in <, > and p2 in {, }
+function add_antinodes
+
+
+    # dx and dy in (, )
+    `l{l<-s(`
+    `l}l>-s)`
+
+    
+
+    # point one
+    `l<s3` # x
+    `l>s4` # y
+    while _add_antinode() == 0 do 
+        `l3l(-s3`
+        `l4l)-s4`
+    end
+
+    `l{s3` # x
+    `l}s4` # y
+    while _add_antinode() == 0 do 
+        `l3l(+s3`
+        `l4l)+s4`
+    end
+end
+
+function _add_antinode
+
+    # bounds check
+    if `l3` < 0 then
+        return -1
+    end
+    if `l4` < 0 then
+        return -1
+    end
+    if `l3` >= `lw1-` then
+        return -1
+    end
+    if `l4` >= `lh` then
+        return -1
+    end
+
+    `l4l3`
+    print_point()
+
+    `1`  # 1
+    `l4lw*l3+` # index
+    `:Z` # store
+
+    0
+
+end
+
+function print_point
+    `[(]nn[, ]nn[)]n`
+end
+
+
+# '0' to '9' is 0-9
+#  48, offset -48
+# 'A' to 'Z' is 10-35
+#  65, offset -55
+# 'a' to 'z' is 36-61
+#  97, offset -61
+function letter_to_ind 
+
+    # not valid
+    if `ln` < '0' then
+        return -1
+    end
+
+    if `ln` <= '9' then
+        return `ln48-`
+    end
+
+    if `ln` < 'A' then
+        return -1
+    end
+
+    if `ln` <= 'Z' then
+        return `ln55-`
+    end
+
+    if `ln` < 'a' then
+        return -1
+    end
+
+    if `ln` <= 'z' then
+        return `ln61-`
+    end
+
+    -1
+
+end
