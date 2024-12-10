@@ -1,0 +1,142 @@
+
+state read_file
+    return_if(`ln` < 48 or `ln` > 57)
+
+    `ln48-` # number of blocks
+    `lz+`   # plus offset
+    `s1`    #
+
+    #`lzn[ ]nl1n10an`
+    for '!' in `lz` to `l1` do 
+        #`l!n`
+        array_set('X', `l!`, `lb`)
+    end
+
+    # store the size of this block
+    array_set('Y', `lb`, `ln48-`)
+
+    `l1sz` # update size
+
+    inc('b')
+
+    set_state(read_blank)
+end
+
+state read_blank
+    return_if(`ln` < 48 or `ln` > 57)
+    
+    `ln48-` # number of blocks
+    `lz+`   # plus offset
+    `s1`    #
+
+    #`lzn[ ]nl1n10an`
+    for '!' in `lz` to `l1` do 
+        array_set('X', `l!`, -1)
+    end
+
+    `l1sz` # update size
+
+    set_state(read_file)
+
+end
+
+interrupt program_start
+    `0sz` # disk size
+    `0sb` # block count
+end
+
+interrupt program_end
+
+    #`lzp`
+    #`lbp`
+    
+    #print_disk()
+    `[disk read]n10an`
+
+    `0s0`
+
+    for '!' in `lz1-` to 0 step -1 do 
+        
+        array_get('X', `l!`)
+        `s1`
+
+        if array_get('X', `l!1-`) != `l1` and `l1` != -1 then 
+
+            array_get('Y', `l1`)
+            `sw` # width
+
+            # find a spot to put this
+            next_open_spot()
+            `s0`
+            # if there's no more then break
+            if `l0` != -1 and `l0` <= `l!` then 
+                `l1pst`
+                for '?' in 0 to `lw` do 
+                    array_set('X', `l0l?+`, `l1`)
+                    array_set('X', `l!l?+`, -1)
+                end
+            end
+        end
+    end
+
+    #print_disk()
+    `[disk fragmented]n10an`
+
+    0
+    for '!' in 0 to `lz` do 
+        if array_get('X', `l!`) != -1 then
+            array_get('X', `l!`)
+            `l!*`
+            `+`
+        end
+    end
+
+    `p`
+end
+
+
+function next_open_spot
+    inc('0')
+    
+    `0sc` # current -1 count
+
+    for '-' in array_get('Z', `lw`) to `lz` do 
+
+        if array_get('X', `l-`) == -1 then
+
+            inc('c') 
+            #`lcn[ ]nlwpst`
+
+            if `lc` == `lw` then 
+                array_set('Z', `lw`, `l-`)
+                return `l-lc-1+`
+            end
+
+        end
+
+        if array_get('X', `l-`) != -1 then
+            `0sc`
+        end
+    end
+
+    array_set('Z', `lw`, `lz1-`)
+    -1
+end
+
+
+function print_disk
+
+    for '!' in 0 to `lz` do 
+        array_get('X', `l!`)
+        `s1`
+        if `l1` == -1 then
+            `[.]n`
+        end
+        if `l1` > -1 then 
+            `l1n`
+        end
+    end
+
+    `10an`
+
+end

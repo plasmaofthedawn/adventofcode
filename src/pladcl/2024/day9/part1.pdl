@@ -1,0 +1,114 @@
+state read_file
+    return_if(`ln` < 48 or `ln` > 57)
+
+    `ln48-` # number of blocks
+    `lz+`   # plus offset
+    `s1`    #
+
+    #`lzn[ ]nl1n10an`
+    for '!' in `lz` to `l1` do 
+        #`l!n`
+        array_set('X', `l!`, `lb`)
+    end
+
+    `l1sz` # update size
+
+    inc('b')
+
+    set_state(read_blank)
+end
+
+state read_blank
+    return_if(`ln` < 48 or `ln` > 57)
+    
+    `ln48-` # number of blocks
+    `lz+`   # plus offset
+    `s1`    #
+
+    #`lzn[ ]nl1n10an`
+    for '!' in `lz` to `l1` do 
+        array_set('X', `l!`, -1)
+    end
+
+    `l1sz` # update size
+
+    set_state(read_file)
+
+end
+
+interrupt program_start
+    `0sz` # disk size
+    `0sb` # block count
+end
+
+interrupt program_end
+
+    #`lzp`
+    #`lbp`
+    
+    #print_disk()
+    `[disk read]n10an`
+
+    `0s0`
+
+    for '!' in `lz1-` to 0 step -1 do 
+        
+        array_get('X', `l!`)
+        `s1`
+
+        if `l1` != -1 then 
+            # find a spot to put this
+            next_open_spot()
+            # if there's no more then break
+            if `l!` < `l0` then 
+                break
+            end
+
+            # move this back
+            array_set('X', `l0`, `l1`)
+            #array_set('X', `l!`, -1)
+        end
+    end
+
+    `l!1+sz`
+
+    #print_disk()
+    `[disk fragmented]n10an`
+
+    0
+    for '!' in 0 to `lz` do 
+        array_get('X', `l!`)
+        `l!*`
+        `+`
+    end
+
+    `p`
+end
+
+
+function next_open_spot
+
+    inc('0')
+    while array_get('X', `l0`) != -1 do 
+        inc('0')
+    end
+
+end
+
+
+function print_disk
+
+    for '!' in 0 to `lz` do 
+        array_get('X', `l!`)
+        `s1`
+        if `l1` == -1 then
+            `[.]n`
+        end
+        if `l1` > -1 then 
+            `l1n`
+        end
+    end
+
+    `10an`
+
+end
