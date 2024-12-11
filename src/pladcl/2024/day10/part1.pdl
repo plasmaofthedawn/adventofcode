@@ -1,0 +1,162 @@
+state find_width
+    return_if(`ln` != 10)
+    `li1+sw`
+    rewind()
+    set_state(start)
+end
+
+
+state start
+    return_if(`ln` != '0')
+
+    `ln48-SN` # number
+    `liSC` # coords
+
+    find_path()
+    `dlo+so`
+    `[path count:]nn10an`
+
+end
+
+interrupt program_start
+
+    # X: dynamic programming array
+    # Y: have entry in above
+    # Z: current visited
+
+    `0so`
+
+end
+
+
+interrupt program_end
+    
+    `[out:]n10an`
+    `lop`
+
+end
+
+
+function find_path
+
+    `[path n=]nlNn[ c=]nlCn10an`
+
+    # out of bounds
+    if `lC` < 0 then
+        `LCstLNst`
+        return 0
+    end
+
+
+    # circular 
+    if array_get('Z', `lC`) == `li1+` then
+        `[circle]n10an`
+        `LCstLNst` # clear params
+        return 0
+    end
+
+    # mark with this index
+    array_set('Z', `lC`, `li1+`)
+
+    # already found the solution to this problem
+    # if array_get('Y', `lC`) == 1 then 
+    #    `[cached]n10an`
+    #    `LNst`
+    #    return array_get('X', `LC`)
+    #end
+
+
+    # if this is an endpoint
+    if `lN` == 9 then 
+        # set this entry as 1
+        array_set('X', `lC`, 1)
+        array_set('Y', `LC`, 1)
+
+        `LNst` # pop params
+
+        return 1
+    end
+    
+    # start sum
+    0
+
+    # store wanted
+    `lN49+S2`
+
+    # top
+    
+    `lClw-S1` # calculate index
+    # if this is the number we are looking for
+    if `l1` >= 0 then 
+        if array_get('I', `l1`) == `l2` then 
+
+            `L1SC` # push new coord
+            `l248-SN` # push new num
+
+            # recurse
+            find_path()
+
+            `+`
+        end
+    end
+
+    # right
+    
+    `lC1+S1` # calculate index
+    # if this is the number we are looking for
+    if `l1` > 0 then 
+        if array_get('I', `l1`) == `l2` then 
+
+            `L1SC` # push new coord
+            `l248-SN` # push new num
+
+            # recurse
+            find_path()
+
+            `+`
+        end
+    end
+
+    # down
+    
+    `lClw+S1` # calculate index
+    # if this is the number we are looking for
+    if `l1` >= 0 then 
+        if array_get('I', `l1`) == `l2` then 
+
+            `L1SC` # push new coord
+            `l248-SN` # push new num
+
+            # recurse
+            find_path()
+
+            `+`
+        end
+    end
+
+
+    # left
+    
+    `lC1-S1` # calculate index
+    # if this is the number we are looking for
+    if `l1` >= 0 then 
+        if array_get('I', `l1`) == `l2` then 
+
+            `L1SC` # push new coord
+            `l248-SN` # push new num
+
+            # recurse
+            find_path()
+
+            `+`
+        end
+    end
+
+
+    # remove N and 2
+    `LNstL2st`
+    # mark as cached
+    array_set('Y', `lC`, 1)
+    # store sum in X (and return it)
+    `dLC:X`
+end
