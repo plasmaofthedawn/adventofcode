@@ -1,0 +1,123 @@
+state start
+
+    return_if(`ln` < '0' or `ln` > '9')
+
+    array_set('X', `lc`, read_number())
+    inc('c')
+
+end
+
+interrupt program_start
+    `0sc`
+end
+
+interrupt program_end
+
+    `0l0`
+
+    for '!' in 0 to 25 do 
+        `1000000l0+s1` # update 1 to yknow.
+        #print_array()
+        `l!n[: ]n`
+        blink()
+        `l1s0` # move to current array
+        `ldsc` # update size
+        `lcl0-n10an`
+    end
+    #print_array()
+    `[out: ]n`
+    `lcl0-n`
+end
+
+function print_array
+
+    for '?' in `l0` to `lc` do 
+        array_get('X', `l?`)
+        `n[ ]n`
+    end
+    `10an`
+
+end
+
+
+function blink
+    # c: length of array + offset
+    # 0: offset into this array
+    # 1: offset into next array
+
+    `l1sd` # curr pointer into next array
+
+    for '?' in `l0` to `lc` do 
+        
+        array_get('X', `l?`)
+        `sn`
+
+        # 0 case -- return 1 rock
+        if `ln` == 0 then
+
+            array_set('X', `ld`, 1)
+            inc('d')
+        
+        end
+        # even digit case -- return split rock
+        if `lnZ2%` == 0 then
+
+            `ln`
+            `10lnZ2/^` # calculate middle divide
+            `~` # get top and bottom
+
+            `ld1+:X` # store bottom at next offset of d
+            `ld:X`   # store top at d
+
+            `ld2+sd` # double d
+
+        end
+        # default case -- return 2024 * rock
+        if `ln` != 0 and `lnZ2%` != 0 then 
+
+            array_set('X', `ld`, `ln2024*`)
+            inc('d')
+
+        end
+    end
+end
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+
+    -1
+    # ret _1 if not a digit
+    return_if(`ln` < 48)
+    return_if(`ln` > 57)
+    `st`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    adjust_index(1)
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    return_if(1 == `z`)
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `st`
+    # decrement i so we reread the skipped char
+    adjust_index(-1)
+
+end

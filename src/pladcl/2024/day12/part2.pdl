@@ -1,0 +1,127 @@
+state find_width
+    return_if(`ln` != 10)
+    `li1+sw`
+    rewind()
+    set_state(start)
+    `[width got]n10an`
+end
+
+state start
+
+    # have got this
+    return_if(array_get('X', `li`) == 1 or `ln` == 10)
+
+    `liSL` # push locatoin
+    `lnsc` # push character
+    flood_fill()
+    `[region=]nlcan[ perimeter=]nlpn[ area=]nlan10an`
+
+    `lpla*`
+    `lo+so` # add cost into out
+
+    `0sp0sa`
+
+end
+
+interrupt program_end
+    `lop`
+end
+
+
+function flood_fill
+    # c: character
+    # p: perimeter
+    # L: location
+    # a: area
+
+    # X: "checked" thing
+
+    # 1: right
+    # 2: left
+    # 3: down
+    # 4: up
+
+    # if this is OOB
+    if `lL` < 0 then 
+        `LLst` # kill L
+        #inc('p') # add to perimeter
+        return 1
+
+    end
+    # if this is not the same area
+    if array_get('I', `lL`) != `lc` then 
+
+        `LLst` # kill L
+        #inc('p') # add to perimeter
+        return 1
+
+    end
+    # this was already checked
+    if array_get('X', `lL`) == 1 then
+        `LLst`
+        return 0
+    end
+
+    # `[floodfill c=]nlcan[ l=]nlLn10an`
+
+    # this is inbounds and part of the area
+    array_set('X', `lL`, 1)
+
+    # right
+    `lL1+SL`
+    if flood_fill() == 1 then
+        # check down/downright for same char
+        if array_get('I', `lLlw+`) != `lc` then 
+            inc('p')
+        end
+        if array_get('I', `lLlw+`) == `lc` and array_get('I', `lLlw+1+`) == `lc` then
+            inc('p')
+        end
+    end
+    # left
+    `lL1-SL`
+    if flood_fill() == 1 then
+        # check down/downleft for same char
+        if array_get('I', `lLlw+`) != `lc` then 
+            inc('p')
+        end
+        if array_get('I', `lLlw+`) == `lc` and array_get('I', `lLlw+1-`) == `lc` then
+            inc('p')
+        end
+    end
+    # down
+    `lLlw+SL` 
+    if flood_fill() == 1 then
+        # check right/rightdown for same char
+        if array_get('I', `lL1+`) != `lc` then 
+            inc('p')
+        end
+        if array_get('I', `lL1+`) == `lc` and array_get('I', `lLlw+1+`) == `lc` then
+            inc('p')
+        end
+    end
+    # up 
+    `lLlw-SL`
+    if flood_fill() == 1 then
+        # check right/rightup for same char
+        if array_get('I', `lL1+`) != `lc` then 
+            inc('p')
+        end
+        if `lLlw-1+` > 0 then
+            if array_get('I', `lL1+`) == `lc` and array_get('I', `lLlw-1+`) == `lc` then
+                inc('p')
+            end
+        end
+    end
+
+    # add to area
+    inc('a')
+
+    # kill L
+    `LLst`
+
+    0
+
+end
+
+
