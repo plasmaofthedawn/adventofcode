@@ -1,0 +1,140 @@
+state read_map
+    if `ln` == '@' then
+        `lisp`
+    end
+end
+
+
+state read_instructions
+    `lnan`
+
+    if `ln` == '<' then 
+        -1
+    end
+    if `ln` == '^' then
+        `0lw-`
+    end
+    if `ln` == '>' then 
+        1
+    end
+    if `ln` == 'v' then
+        `lw`
+    end
+    if `ln` == 10 then
+        return
+    end
+
+    move()
+
+    #print_board()
+
+end
+
+interrupt newline
+
+    if `lw` == 0 then
+        `li1+sw`
+    end
+
+    if `li1+;I` == 10 then 
+        `li1+lw/sh`
+
+        `[board is ]nlw1-n[x]nlhn10an`
+        `lplw~`
+        `[robot is at (]nn[,]nn[)]n10an`
+
+        adjust_index(2)
+
+        set_state(read_instructions)
+    end
+
+end
+
+interrupt program_end
+
+    `st`
+
+    `[finished]n10an`
+
+    0
+    for '!' in 0 to `lwlh*` do 
+    
+        if `l!;I` == 'O' then 
+            `l!lw~`
+            `[box is at (]nn[,]nn[)]n10an`
+            `l!lw~`
+            `r100*++`
+        end
+
+    end
+
+
+end
+
+
+function print_board 
+
+    for '!' in 0 to `lwlh*` do 
+
+        `l!;Ian`
+
+    end
+
+end
+
+
+function move
+
+    `sv`
+    `lpSP`
+    if _move() == 1 then 
+        
+        '.'
+        `lp:I`
+        
+        '@'
+        `lplv+dsp:I`
+
+    end
+
+end
+
+function _move
+    # v is vector of movement
+    # P is current position of push
+
+    # returns 1 if can move/push
+
+    # empty space -- can push
+    if `lPlv+;I` == '.' then
+        `LPst`
+        return 1
+    end
+
+    # wall -- can't push
+    if `lPlv+;I` == '#' then 
+        `LPst`
+        return 0
+    end
+
+    # box, need to check further
+    if `lPlv+;I` == 'O' then
+        `lPlv+SP` # add new position to stack
+        
+        # if we can move
+        if _move() == 1 then 
+            # set the next spot to be an O
+            'O'
+            `LPlvd++:I`
+            return 1
+
+        end
+
+        `LPst`
+        return 0
+
+    end
+
+    `[unknown symbol type: ]nlPlv+;Ian10an`
+end
+

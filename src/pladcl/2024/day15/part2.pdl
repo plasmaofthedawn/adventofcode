@@ -1,0 +1,382 @@
+interrupt program_start
+    `0sc`
+end
+
+state read_map
+    if `ln` == '@' then
+        '@'
+        `lc:X`
+        `lcsp`
+        inc('c')
+        '.'
+        `lc:X`
+        inc('c')
+    end
+
+    if `ln` == '#' then 
+         '#'
+        `lc:X`
+        inc('c')
+        '#'
+        `lc:X`
+        inc('c')
+    end
+
+    if `ln` == '.' then 
+         '.'
+        `lc:X`
+        inc('c')
+        '.'
+        `lc:X`
+        inc('c')
+    end
+
+    if `ln` == 'O' then 
+         '['
+        `lc:X`
+        inc('c')
+        ']'
+        `lc:X`
+        inc('c')
+    end
+
+
+
+end
+
+
+state read_instructions
+    `lnan`
+
+    if `ln` == '<' then 
+        -1
+    end
+    if `ln` == '^' then
+        `0lw-`
+    end
+    if `ln` == '>' then 
+        1
+    end
+    if `ln` == 'v' then
+        `lw`
+    end
+    if `ln` == 10 then
+        return
+    end
+
+    move()
+
+    #print_board()
+
+end
+
+interrupt newline
+
+    if `lw` == 0 then
+        `lisw`
+    end
+
+    if `li1+;I` == 10 then 
+        `lilw/sh`
+        `lw2*sw`
+
+        `[board is ]nlw1-n[x]nlhn10an`
+        `lplw~`
+        `[robot is at (]nn[,]nn[)]n`
+
+        adjust_index(2)
+
+        set_state(read_instructions)
+
+        print_board()
+
+    end
+
+end
+
+interrupt program_end
+
+    `st`
+
+    `[finished]n10an`
+
+    0
+    for '!' in 0 to `lc` do 
+    
+        if `l!;X` == '[' then 
+            `l!lw~`
+            `[box is at (]nn[,]nn[)]n10an`
+            `l!lw~`
+            `r100*++`
+        end
+
+    end
+
+    `p`
+
+
+end
+
+
+function print_board 
+
+    for '!' in 0 to `lc` do 
+
+        if `l!lw%` == 0 then 
+            `10an`
+        end
+
+        `l!;Xan`
+
+    end
+
+    `10an`
+
+end
+
+
+function move
+
+    `sv`
+    `lpSP`
+    
+    `[`
+    _move()
+    `10an]x` #????
+
+    `[wow]nps.`
+    if `l.` == 1 then 
+
+        `[moved]n`
+        
+        '.'
+        `lp:X`
+        
+        '@'
+        `lplv+dsp:X`
+
+    end
+
+end
+
+function _move
+    # v is vector of movement
+    # P is current position of push
+
+    # returns 1 if can move/push
+
+    # empty space -- can push
+    if `lPlv+;X` == '.' then
+        `LPst`
+        return 1
+    end
+
+    # wall -- can't push
+    if `lPlv+;X` == '#' then 
+        `LPst`
+        return 0
+    end
+
+    # box left, need to check further
+    if `lPlv+;X` == '[' then
+
+        # rightwards push
+        if `lv` == 1 then 
+
+            `lP2+SP` # add point to the right
+            
+            # if we can move
+            if _move() == 1 then
+
+                # move this box
+                ']'
+                `lP3+:X`
+                '['
+                `LP2+:X`
+
+                return 1
+
+            end
+
+            return 0
+
+        end
+
+        # up/down push
+        if `lv` != 1 then
+
+            `lPlv+SP` # add point to the up/down
+            # check if we can move
+
+            if updown_check() == 1 then 
+
+                `LPlv+SP` # move 
+                updown_move()
+
+                return 1
+
+            end
+
+            `[done]n`
+
+            `LPst`
+
+            return 0
+
+        end
+
+    end
+
+    # box right, need to check further
+    if `lPlv+;X` == ']' then
+        # leftwards push
+        if `lv` == -1 then 
+
+            `lP2-SP` # add point to the two left
+            
+            # if we can move
+            if _move() == 1 then
+
+                # move this box
+                '['
+                `lP3-:X`
+                ']'
+                `LP2-:X`
+
+                return 1
+
+            end
+
+            return 0
+
+        end
+
+        # up/down push
+        if `lv` != -1 then
+
+            `lPlv+SP` # add point to the up/down
+            # check if we can move
+            if updown_check() == 1 then 
+
+                `LPlv+SP` # move 
+                updown_move()
+
+                return 1
+
+            end
+
+            `LPst`
+
+            return 0
+
+        end
+
+    end
+
+    0
+    `[unknown symbol type: ]nlPlv+;Xan10an`
+end
+
+# takes position in P
+# also vector (assmed to be up or down) in v
+function updown_check 
+
+    `[updown_check p=]nlPn[ ]nlP;Xan10an`
+
+    if `lP;X` == '.' then 
+        `LPst`
+        return 1
+    end
+
+    if `lP;X` == '#' then 
+        `LPst`
+        return 0
+    end
+
+    if `lP;X` == ']' then 
+        `LPlv+d`
+        `SP` # store one directly above
+        `1-SP` # and one directly to the left
+
+        if updown_check() == 1 then 
+            if updown_check() == 1 then
+                
+                `[}1]n`
+                return 1
+
+            end
+        end
+
+        `[}0]n`
+
+        return 0
+    end
+
+    if `lP;X` == '[' then 
+        `LPlv+d`
+        `SP` # store one directly above
+        `1+SP` # and one directly to the right
+
+        if updown_check() == 1 then
+            if updown_check() == 1 then
+                `[{1]n`
+                return 1
+            end
+        end
+
+        `[{0]n`
+        return 0
+    end
+
+    0
+
+end
+
+
+# takes position above/below [ in P
+function updown_move
+
+    `[updown_move p=]nlPn[ ]nlP;Xan10an`
+
+    if `lP;X` == '.' then 
+        `LPst`
+        return
+    end
+
+    if `lP;X` == '#' then 
+        `LPst`
+        `[updown move on invalid thing. fuck.]n10an`
+        return
+    end
+
+    if `lP;X` == '[' then 
+        `lPlv+ds11+s2` # 1 = above directly, 2 = abo
+
+        '.'
+        `lP:X`
+        '.'    # and remove traces
+        `lP1+:X`
+        
+        `l1SP` # store one directly above '['
+        `l2SP` # store two directly above ']'
+        updown_move()
+        updown_move() 
+
+        `LPlv+ds11+s2` # 1 = above directly, 2 = abo
+        '['
+        `l1:X` # put this here
+        ']'
+        `l2:X` # and this here
+
+        return
+
+    end
+
+    if `lP;X` == ']' then 
+         `LP1-SP`
+         updown_move()
+
+         return
+    end
+
+end

@@ -1,0 +1,164 @@
+state read_a
+    
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sA`
+    set_state(read_b)
+
+end
+
+state read_b
+
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sD`
+    set_state(read_c)
+
+end
+
+state read_c
+    
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sB`
+    set_state(read_d)
+
+end
+
+state read_d
+
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sE`
+    set_state(read_e)
+
+
+end
+
+state read_e
+
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sC`
+    set_state(read_f)
+
+
+end
+
+state read_f
+
+    return_if(`ln` < '0' or `ln` > '9') 
+    read_number()
+    `sF`
+
+    `lC10000000000000+sC`
+    `lF10000000000000+sF`
+
+    `[a=]nlAn[ b=]nlBn[ c=]nlCn[ d=]nlDn[ e=]nlEn[ f=]nlFn`
+    `10an`
+
+    # (a, d)
+    # (b, e)
+    # (c, f)
+
+    # (af - cd) / (ae - bd)
+    # num
+    `lAlF*`
+    `lClD*`
+    `-`
+
+    # den 
+    `lAlE*`
+    `lBlD*`
+    `-`
+
+    `~s.sY`
+    
+    `[. = ]nl.n[ ]n`
+
+    if `lY` < 0 and `l.` == 0 then
+        `[fuck!!! ]n`
+    end
+
+    # if no residue
+    if `l.` == 0 then 
+        `lClBlY*-lA~s.sX`
+        if `l.` == 0 then
+            `[x = ]nlXn[ y = ]nlYn10an`
+            `lX3*lY+`
+            `lo+so`
+        end
+        if `l.` != 0 then
+            `[no sollution x]n10an`
+        end
+    end
+    if `l.` != 0 then 
+        `[no solution]n10an`
+    end
+
+    set_state(read_a)
+
+end
+
+interrupt program_start
+    `0k`
+end
+
+interrupt program_end
+    `lop`
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function read_number
+    read_number_start()
+    read_number_end()
+end
+
+function read_number_start
+
+    -1
+    # ret _1 if not a digit
+    return_if(`ln` < 48)
+    return_if(`ln` > 57)
+    `st`
+
+    # throw the true digit onto the stack
+    `ln48-`
+
+    # inc i
+    adjust_index(1)
+    # recurse
+    read_number_start()
+
+end
+
+function read_number_end
+
+    # if we only have 1 item on stack (-1) we found no number, so return
+    return_if(1 == `z`)
+    
+    # push entire number thing onto temporary stack
+    `[STz0<.]ds.x`
+    # multiply ten then pop and add repeatedly until done
+    `0`
+    `[LTd_1=qr10*+l.x]ds.x`
+    # get rid of the extra -1
+    `st`
+    # decrement i so we reread the skipped char
+    adjust_index(-1)
+
+end
