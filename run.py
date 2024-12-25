@@ -86,13 +86,20 @@ def generate_commands_z80(problem: Problem, flags:Optional[list[str]]=None):
     run_compile_command(f"cat {preamble_location} {problem.build_location} > {problem.build_location + "0"}", shell=True)
 
     run_run_command(f"echo q | {simulator_location} -x{problem.build_location}0", shell=True)
+
+
+def generate_commands_c(problem: Problem, flags):
+
+    run_compile_command(["gcc", problem.source_location, "-o", problem.build_location])
+    run_run_command(" ".join(["cat", problem.resource_location, "|", "./" + problem.build_location]), shell=True)
     
 
 languages = {
     "pladcl": Language("pladcl", "pdl", generate_commands_pladcl, build_extension="dc"),
     "pascal": Language("pascal", "pas", generate_commands_pascal),
     "python": Language("python", "py", lambda problem, flags: run_run_command(["python3", problem.source_location] + (flags if flags else []))),
-    "z80": Language("z80", "z80", generate_commands_z80, build_extension="bin")
+    "z80": Language("z80", "z80", generate_commands_z80, build_extension="bin"),
+    "c": Language("c", "c", generate_commands_c, build_extension="out")
 }
 
 

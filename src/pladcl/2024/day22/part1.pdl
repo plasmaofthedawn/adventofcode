@@ -1,0 +1,99 @@
+state start
+
+    read_number()
+
+    `sm`
+    secret_number()
+    `lmlo+so`
+    `[.]n`
+
+end
+
+
+interrupt program_end
+
+    `10an`
+    `lop`
+
+end
+
+# thing on stack
+function secret_number
+
+    for '!' in 0 to 2000 do 
+
+        `lm64*`
+        mix_and_prune()
+        `lm32/`
+        mix_and_prune()
+        `lm2048*`
+        mix_and_prune()
+
+        #`lmn10an`
+    end
+end
+
+
+# thing on stack, number in m
+function mix_and_prune
+
+    # mix
+    `lm`
+    xor()
+
+    # prune
+    `16777216%`
+    `sm`
+
+end
+
+# takes shit on the stack, leaves shit on the stack
+function xor
+
+    `s1s2`
+    `_1Sb`
+
+    while `l1` != 0 or `l2` != 0 do 
+
+        `l1 2~s3s1`
+        `l2 2~s4s2`
+
+        0 # this bit
+        if `l3l4+` == 1 then
+            `1+` # make it 1
+        end
+
+        `Sb`
+
+    end
+
+    0 # start at 0
+    for '1' in stack 'b' do 
+        `2*` # double existing
+        `l1+` # add in 
+    end
+
+end
+
+function read_number
+    # does no error checking
+    `1` # sign
+    if `ln` == '-' then 
+        `2-` # negative
+        adjust_index(1)
+    end
+
+    `0` # c num
+    while `ln` >= '0' and `ln` <= '9' do 
+
+        `10*`
+        `ln48-+` # add in number
+        adjust_index(1)
+    
+    end
+
+    #adjust_index(-1)
+
+    `*`
+
+end

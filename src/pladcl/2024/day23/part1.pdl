@@ -1,0 +1,88 @@
+state start
+
+    `ln`
+    'a'
+    `-`
+    `26*`
+    adjust_index(1)
+    `ln`
+    'a'
+    `-+`
+ 
+    `s1`
+
+    # past the '-'
+    adjust_index(2)
+
+    `ln`
+    'a'
+    `-`
+    `26*`
+    adjust_index(1)
+    `ln`
+    'a'
+    `-+`
+ 
+    `s2`
+
+
+    array_set('X', `l1676*l2+`, 1)
+    array_set('X', `l2676*l1+`, 1)
+
+    #`l1n[ ]nl2n10an`
+
+    adjust_index(1)
+
+end
+
+
+interrupt program_end
+
+    for '!' in 494 to 520 do 
+
+    #for '!' in 495 to 496 do 
+        #`l!26%`
+        #'a'
+        #`+an`
+        for '?' in 0 to 675 do
+
+            #`l?n`
+            #`[ ]n`
+            #array_get('X', `l?676*l!+`)
+            #`n`
+            #`10an`
+            
+            if not (`l?` >= 494 and `l?` <= `l!`) and array_get('X', `l!676*l?+`) == 1 then
+
+                #`l?n[ ]n`
+
+                for '@' in `l?1+` to 676 do 
+
+                    if not (`l@` >= 494 and `l@` <= `l!`) then
+                        if array_get('X', `l!676*l@+`) == 1 and array_get('X', `l?676*l@+`) == 1 then
+                                #`[wow]n`
+                                inc('o')
+                        end
+                    end
+                end
+
+            end
+
+        end
+
+    end
+
+    `lop`
+
+end
+
+
+# on stack
+function print_node
+    `26~r`
+    'a'
+    `+an`
+    'a'
+    `+an`
+    `[ ]n`
+end

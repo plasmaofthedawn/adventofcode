@@ -1,0 +1,217 @@
+interrupt program_start
+
+    `_1Sb` # bits ender
+
+
+    # combo operands
+
+    `[0]0:C`
+    `[1]1:C`
+    `[2]2:C`
+    `[3]3:C`
+    `[lA]4:C`
+    `[lB]5:C`
+    `[lC]6:C`
+    `[[7 combo operand]p20Q]7:C`
+
+    # opcodes
+    `[` # adv
+        `lA`
+        2
+        read_combo_operand()
+        `^/`
+        `sA`
+    `]0:O`
+
+    `[` # bxl
+        `lB`
+        fetch()
+        xor()
+        `sB`
+    `]1:O`
+
+    `[` #bst
+        read_combo_operand()
+        `8%`
+        `sB`
+    `]2:O`
+
+    `[` # jnz
+        return_if(`lA` == 0)
+        fetch()
+        `sp`
+    `]3:O`
+
+    `[` # bxc
+        fetch()
+        `st`
+        `lBlC`
+        xor()
+        `sB`
+    `]4:O`
+
+    `[` # out
+        if `l,` == 1 then
+            `[,]n`
+        end
+        read_combo_operand()
+        `8%n`
+        `1s,`
+    `]5:O`
+    
+    `[` # bdv
+        `lA`
+        2
+        read_combo_operand()
+        `^/`
+        `sB`
+    `]6:O`
+
+    `[` # cdv
+        `lA`
+        2
+        read_combo_operand()
+        `^/`
+        `sC`
+    `]7:O`
+
+end
+
+
+
+state read_A
+    adjust_index(12)
+
+    read_number()
+
+    `sA`
+
+    set_state(read_B)
+
+end
+
+state read_B
+
+    adjust_index(12)
+
+    read_number()
+
+    `sB`
+    
+    set_state(read_C)
+
+end
+
+state read_C
+
+    adjust_index(12)
+    read_number()
+    `sC`
+    set_state(read_program)
+
+
+    `0sc`
+    adjust_index(10)
+
+end
+
+
+state read_program
+    array_set('P', `lc`, `ln48-`)
+    inc('c')
+    adjust_index(1)
+end
+
+
+interrupt program_end
+
+    
+    `[A:]nlAn[ B:]nlBn[ C:]nlCn[ p:]nlpn10an`
+
+
+    `0s,` # have commaed
+    `0sp` # program counter
+
+    `10an`
+
+    while `lp` < `lc` do 
+
+        cpu_cycle()
+
+        #`[A:]nlAn[ B:]nlBn[ C:]nlCn[ p:]nlpn10an`
+
+    end
+
+end
+
+function fetch
+    array_get('P', `lp`)
+    inc('p')
+end
+
+function cpu_cycle
+
+    array_get('O', fetch())
+    `x`
+    
+end
+
+
+function read_combo_operand
+    array_get('C', fetch())
+    `x`
+end
+
+
+# takes shit on the stack, leaves shit on the stack
+function xor
+
+    `s1s2`
+    `_1Sb`
+
+    while `l1` != 0 or `l2` != 0 do 
+
+        `l1 2~s3s1`
+        `l2 2~s4s2`
+
+        0 # this bit
+        if (`l3` == 0 and `l4` == 1) or (`l3` == 1 and `l4` == 0) then
+            `1+` # make it 1
+        end
+
+        `Sb`
+
+    end
+
+    0 # start at 0
+    for '1' in stack 'b' do 
+        `2*` # double existing
+        `l1+` # add in 
+    end
+
+end
+
+
+
+function read_number
+    # does no error checking
+    `1` # sign
+    if `ln` == '-' then 
+        `2-` # negative
+        adjust_index(1)
+    end
+
+    `0` # c num
+    while `ln` >= '0' and `ln` <= '9' do 
+
+        `10*`
+        `ln48-+` # add in number
+        adjust_index(1)
+    
+    end
+
+    #adjust_index(-1)
+
+    `*`
+
+end

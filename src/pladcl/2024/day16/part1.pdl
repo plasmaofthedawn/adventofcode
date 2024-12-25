@@ -1,0 +1,243 @@
+interrupt program_start
+
+    `1 0:X` # 1 + heap size
+    # X is heap
+    
+    # Y is values of heap 
+
+
+end
+
+state start
+    
+    if `ln` == 'E' then 
+        `lisE`
+    end
+    if `ln` == 'S' then
+        # set for iterate heap
+        array_set('I', `li`, '.')
+        `lisS`
+    end
+
+    if `lw` == 0 and `ln` == 10 then
+        `li1+sw`
+        `0lw-0:V` # up
+        `1 1:V` # right
+        `lw2:V` # down
+        `_1 3:V` # left
+    end
+
+
+end
+
+interrupt program_end
+
+    `[starting]n10an`
+
+    # 0123 = NESW
+    `1` # start facing east
+    `lS10*+` # add in start position
+
+    `sv`  # value for heap
+    `0sp` # priority starts at 0
+    heap_add() # add into heap
+
+    while iterate_heap() != 1 do 
+
+    end
+
+    `lpn`
+
+end
+
+function iterate_heap
+
+    heap_pop()
+
+    `lv`
+    `10~`
+    `sdsi` # get direction and index
+
+    # if we've already been here
+    if array_get('L', `lv`) == 1 then
+        return 0
+    end
+    # finish
+    array_set('L', `lv`, 1)
+
+
+
+
+    `lin[ ]nlpn10an`
+
+        
+    if `li` == `lE` then
+        #`[done]n`
+        return 1
+    end
+
+    if `li;I` != '.' then
+        #`[bad]n10an`
+        return 0
+    end
+
+    # inc cost
+    `lp1+sp`
+    
+    # forward
+    `li`
+    `ld;V+`  # add in vector 
+    `10*ld+sv` # and direction
+    heap_add()
+
+    # inc cost again
+    `lp1000+sp`
+
+    # right
+    `ld1+4%sd`
+    
+    `li`
+    `ld;V+`  # add in vector 
+    `10*ld+sv` # and direction
+    heap_add()
+
+    # left
+    `ld2+4%sd`
+    
+    `li`
+    `ld;V+`  # add in vector 
+    `10*ld+sv` # and direction
+    heap_add()
+
+    0
+
+end
+
+function calculate_vecs
+    # 0 = forward
+    # 1 = right
+    # 2 = down
+    # 3 = left
+
+    if `ld` == 0 then
+        `lw-`
+    end
+
+end
+
+
+function heap_add
+
+    # priority in p, value in v
+
+    array_set('X', `0;X`, `lp`)
+    array_set('Y', `0;X`, `lv`)
+
+    # up heap
+    `0;X`
+    up_heap()
+
+    # inc heap size
+    #`[wow]n10an`
+    array_set('X', 0, `0;X1+`)
+
+end
+
+
+function heap_pop
+
+    if `0;X` == 1 then
+        `[nothing to pop]n10an`
+        `5Q`
+    end
+
+    # returns priority in p, value in v
+
+    # get return values
+    array_get('X', 1)
+    `sp`
+    array_get('Y', 1)
+    `sv`
+
+    # dec heap size
+    array_set('X', 0, `0;X1-`)
+    
+    # move new things down
+    array_set('X', 1, array_get('X', `0;X`))
+    array_set('Y', 1, array_get('Y', `0;X`))
+
+    1
+    down_heap()
+    # down heap
+
+
+end
+
+function up_heap
+    # position is on the stack
+    `s.`
+
+    # if we're at the top of heap
+    return_if(`l.` == 1)
+
+    #`l.nl.2/dsn[|]n`
+    # if we need to swap
+    if array_get('X', `l.`) < array_get('X', `l.2/ds,`) then
+        
+        # swap
+        array_swap('X', `l.`, `l,`)
+        array_swap('Y', `l.`, `l,`)
+
+        `l,`
+        up_heap()
+        # up heap another one
+
+    end
+end
+
+function down_heap
+
+    # position is on the stack
+    `dSPs,`
+
+    # check left
+    `lP2*s.`
+    if `l.` < array_get('X', 0) and array_get('X', `l.`) < array_get('X', `l,`) then 
+        `l.s,`
+    end
+
+    # check right
+    inc('.')
+    if `l.` < array_get('X', 0) and array_get('X', `l.`) < array_get('X', `l,`) then 
+        `l.s,`
+    end
+
+    # swap and more heap
+    if `l,` != `lP` then 
+        
+        array_swap('X', `l,`, `lP`)
+        array_swap('Y', `l,`, `lP`)
+
+        `l,`
+        down_heap()
+
+    end
+
+    `LPst`
+
+
+
+end    
+
+
+function print_heap
+
+    `[size: ]n0;X1-n10an`
+
+    for '!' in 1 to `0;X` do 
+
+        `[priority: ]l!;Xn[ value: ]nl!;Yn10an`
+
+    end
+
+end

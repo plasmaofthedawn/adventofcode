@@ -1,0 +1,117 @@
+state start
+
+    `ln`
+    'a'
+    `-`
+    `26*`
+    adjust_index(1)
+    `ln`
+    'a'
+    `-+`
+ 
+    `s1`
+
+    # past the '-'
+    adjust_index(2)
+
+    `ln`
+    'a'
+    `-`
+    `26*`
+    adjust_index(1)
+    `ln`
+    'a'
+    `-+`
+ 
+    `s2`
+
+    array_get('X', `l1`)
+    `2l2^+`
+    `l1:X`
+
+    array_get('X', `l2`)
+    `2;1^+`
+    `l2:X`
+
+    array_set('Y', `l1`, 1)
+    array_set('Y', `l2`, 1)
+
+    #`l1n[ ]nl2n10an`
+
+    adjust_index(1)
+
+end
+
+
+interrupt program_end
+
+    0
+    for '!' in 0 to 676 do 
+        if array_get('Y', `l!`) == 1 then 
+            `2l!^+` # bitmap
+        end
+    end
+
+    `SP`
+    `0SR`
+    `0SX`
+    
+end
+
+function bit_and
+
+    `s1s2`
+    0
+    for '.' in 0 to 676 do 
+        if `l12l!^/2%` == 1 and `l22l!^/2%` == 1 then
+            `2l!^+`
+        end
+    end
+
+end
+
+function bit_or
+
+    `s1s2`
+    0
+    for '.' in 0 to 676 do
+        if `l12l!^/2%` == 1 or `l22l!^/2%` == 1 then
+            `2l!^+`
+        end
+    end
+ 
+
+end
+
+
+# R P X stacks
+function bron_kerbosch
+    
+    if `lP` == 0 and `lX` == 0 then
+        `LRSO`
+        `LPstLXst`
+        return
+    end
+
+    `0S!`
+
+    while `l!` < 676 do 
+
+        if `lP`
+
+        `L!1+S!`
+    end
+
+    `LPstLXstLRstL!st`
+end
+
+
+# on stack
+function print_node
+    `26~r`
+    'a'
+    `+an`
+    'a'
+    `+an`
+    `[ ]n`
+end
