@@ -1,0 +1,132 @@
+i64 write(i32, ptr i8, u64) {
+    `scsbsa`
+    syscall3(i64(1), `la` as i64, `lb` as i64, `lc` as i64)
+}
+
+i64 read(i32, ptr i8, u64) {
+    `scsbsa`
+    syscall3(i64(0), `la` as i64, `lb` as i64, `lc` as i64)
+}
+
+i32 open(ptr i8, i32, i32) { 
+    `scsbsa`
+    syscall3(i64(2), `la` as i64, `lb` as i64, `lc` as i64)
+    as i32
+}
+
+void putc(i8) {
+    array i8[1] `dstr` store 
+    write(1, `lt`, u64(1))
+}
+
+u64 strlen(ptr i8) {
+    dup while(dup load i8(0) !=) { 1+ } `r-`
+}
+
+void print(ptr i8) {
+    1 rev dup strlen write trash
+}
+
+void println(ptr i8) {
+    print i8(10) putc
+}
+
+void printnum(i32) {
+ 
+    if (dup 0 ==) {
+        putc('0')
+    } else if (dup 0 <) {
+        `0r-` '-' putc
+    }
+
+    array i8[11] 10+ dup i8(0) store -1+ `sb`
+
+    while (dup 0 >) {
+        10 divmod 48+ as i8 
+        `lb` rev store 
+        `lb` -1+ `sb`
+    }
+
+    print(`lb`1+)
+
+}
+
+i32 atoi(ptr i8) {
+    set string
+    0
+    while (get string load '0' >= get string load '9' <= &) {
+        10* get string load '0'- as i32 +
+        get string 1+ set string
+    }
+}
+
+i32 abs(i32) {
+    if (dup 0 <) {`0r-`}
+}
+
+i32 main() {
+   
+    println(" hello world")
+
+    open("input.txt", 0, 0) set file
+
+    print("filedescript:")
+    printnum(get file)
+    println(" ")
+
+    array i8[65535] set buffer
+
+    get buffer i8(48) store
+     
+    read(get file, get buffer, u64(65535)) as i32 set size
+
+    print("size: ")
+    printnum(get size)
+    println(" ")
+
+
+    0 set out
+    50 set dial
+    0 set i 
+    while (get i get size <) {
+
+        if (get buffer get i + load 'R' ==) {
+            1
+        } else {
+            -1
+        } 
+
+        get i 1+ set i
+        atoi(get buffer get i+) *
+
+        100 divmod rev abs get out + set out
+        get dial + 
+
+        if (dup 100 >=) {
+            get out 1+ set out
+            100-
+        } else if (dup 0 <) {
+            100+
+            if (get dial 0 !=) {
+                get out 1+ set out
+            }
+        } else if (dup 0 ==) {
+            get out 1+ set out
+        }
+
+        set dial
+
+        printnum(get dial)
+        print(", ")
+        printnum(get out)
+        println(" ")
+
+
+        while (get buffer get i+ load i8(10) !=) { `li1+si` }
+        `li1+si`
+
+    }
+
+    get out printnum
+    0
+}
